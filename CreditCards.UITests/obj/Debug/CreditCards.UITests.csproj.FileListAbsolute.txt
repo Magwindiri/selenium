@@ -1,0 +1,17 @@
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.Interface.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.MSTestAdapter.PlatformServices.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\CreditCards.UITests.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\CreditCards.UITests.pdb
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\WebDriver.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\WebDriver.Support.dll
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.xml
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\Microsoft.VisualStudio.TestPlatform.TestFramework.Extensions.xml
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\WebDriver.xml
+C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\WebDriver.Support.xml
+C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.csprojAssemblyReference.cache
+C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.csproj.CopyComplete
+C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.dll
+C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.pdb
