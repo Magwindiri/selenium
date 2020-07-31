@@ -9,6 +9,7 @@ C:\_devprojects\selenium\CreditCards\bin\Debug\netcoreapp2.1\CreditCards.dll
 C:\_devprojects\selenium\CreditCards\bin\Debug\netcoreapp2.1\CreditCards.pdb
 C:\_devprojects\selenium\CreditCards\bin\Debug\netcoreapp2.1\CreditCards.Views.dll
 C:\_devprojects\selenium\CreditCards\bin\Debug\netcoreapp2.1\CreditCards.Views.pdb
+C:\_devprojects\selenium\CreditCards\obj\Debug\netcoreapp2.1\CreditCards.csprojAssemblyReference.cache
 C:\_devprojects\selenium\CreditCards\obj\Debug\netcoreapp2.1\CreditCards.RazorAssemblyInfo.cache
 C:\_devprojects\selenium\CreditCards\obj\Debug\netcoreapp2.1\CreditCards.RazorAssemblyInfo.cs
 C:\_devprojects\selenium\CreditCards\obj\Debug\netcoreapp2.1\CreditCards.AssemblyInfoInputs.cache

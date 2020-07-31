@@ -222,5 +222,67 @@ namespace CreditCards.UITests
             driver.Quit();
         }
 
+        [TestMethod]
+        public void BeSubmittedWhenValidationErrorsCorrected()
+        {
+            const string firstName = "Stephen";
+            const string invalidAge = "17";
+            const string validAge = "18";
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(ApplyUrl);
+
+
+            driver.FindElement(By.Id("FirstName")).SendKeys(firstName);
+
+            driver.FindElement(By.Id("FrequentFlyerNumber")).SendKeys("AAAAA2");
+
+            driver.FindElement(By.Id("Age")).SendKeys(invalidAge);
+
+            driver.FindElement(By.Id("GrossAnnualIncome")).SendKeys("5000");
+
+            driver.FindElement(By.Id("Married")).Click();
+
+            IWebElement businessSourceSelectElement =
+                driver.FindElement(By.Id("BusinessSource"));
+
+            SelectElement BusinessSource = new SelectElement(businessSourceSelectElement);
+            BusinessSource.SelectByValue("Email");
+
+            driver.FindElement(By.Id("TermsAccepted")).Click();
+
+            driver.FindElement(By.Id("SubmitApplication")).Click();
+            DemoHelper.Pause();
+
+            var validationErrors =
+                driver.FindElements(By.CssSelector(".validation-summary-errors > ul > li"));
+            Assert.AreEqual(2, validationErrors.Count);
+            Assert.AreEqual("Please provide a last name", validationErrors[0].Text);
+            Assert.AreEqual("You must be at least 18 years old", validationErrors[1].Text);
+
+            //fix errors
+            driver.FindElement(By.Id("LastName")).SendKeys("Magwindiri");
+
+            driver.FindElement(By.Id("Age")).Clear();
+            driver.FindElement(By.Id("Age")).SendKeys(validAge);
+
+            //Resubmit the form
+            driver.FindElement(By.Id("SubmitApplication")).Click();
+
+            //Check form submitted
+            StringAssert.StartsWith("Application Complete", driver.Title);
+            Assert.AreEqual("ReferredToHuman", driver.FindElement(By.Id("Decision")).Text);
+            Assert.IsNotNull(driver.FindElement(By.Id("ReferenceNumber")).Text);
+            Assert.AreEqual("Stephen Magwindiri", driver.FindElement(By.Id("FullName")).Text);
+            Assert.AreEqual("18", driver.FindElement(By.Id("Age")).Text);
+            Assert.AreEqual("5000", driver.FindElement(By.Id("Income")).Text);
+            Assert.AreEqual("Married", driver.FindElement(By.Id("RelationshipStatus")).Text);
+            Assert.AreEqual("Email", driver.FindElement(By.Id("BusinessSource")).Text);
+
+
+            driver.Close();
+            driver.Quit();
+        }
+
     }
 }
