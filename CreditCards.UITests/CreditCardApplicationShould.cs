@@ -76,6 +76,7 @@ namespace CreditCards.UITests
         {
             IWebDriver driver = new ChromeDriver();
             driver.Navigate().GoToUrl(HomeUrl);
+            driver.Manage().Window.Minimize();
             DemoHelper.Pause();
 
             WebDriverWait wait =

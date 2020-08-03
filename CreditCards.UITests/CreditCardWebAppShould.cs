@@ -10,6 +10,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using OpenQA.Selenium.Support.UI;
+using ApprovalTests.Reporters.Windows;
+using System.IO;
+using ApprovalTests;
+using ApprovalTests.Reporters;
 
 namespace CreditCards.UITests
 {
@@ -22,7 +26,7 @@ namespace CreditCards.UITests
         private const string ApplyUrl = "http://localhost:44108/Apply";
 
         [TestMethod]
-        public void CreditCardWebAppShouldPage() 
+        public void CreditCardWebAppShouldPage()
         {
             string actualResults;
             //string expectedResults = "Home Page-Credit Cards";
@@ -30,6 +34,20 @@ namespace CreditCards.UITests
             IWebDriver driver = new ChromeDriver();
             driver.Navigate().GoToUrl(HomeUrl);
             driver.Manage().Window.Maximize();
+            DemoHelper.Pause();
+            driver.Manage().Window.Minimize();
+            DemoHelper.Pause();
+            driver.Manage().Window.Size = new System.Drawing.Size(300, 400);
+            DemoHelper.Pause();
+            driver.Manage().Window.Position = new System.Drawing.Point(1, 1);
+            DemoHelper.Pause();
+            driver.Manage().Window.Position = new System.Drawing.Point(50, 50);
+            DemoHelper.Pause();
+            driver.Manage().Window.Position = new System.Drawing.Point(100, 100);
+            DemoHelper.Pause();
+
+            driver.Manage().Window.FullScreen();
+
             actualResults = driver.Title;
 
             Assert.AreEqual(HomeTitle, actualResults);
@@ -145,8 +163,8 @@ namespace CreditCards.UITests
 
             DemoHelper.Pause();
 
-            ReadOnlyCollection<IWebElement> tableCells =  driver.FindElements(By.TagName("td"));
-            
+            ReadOnlyCollection<IWebElement> tableCells = driver.FindElements(By.TagName("td"));
+
 
             Assert.AreEqual("Easy Credit Card", tableCells[0].Text);
             Assert.AreEqual("20% APR", tableCells[1].Text);
@@ -270,7 +288,7 @@ namespace CreditCards.UITests
             driver.FindElement(By.Id("SubmitApplication")).Click();
 
             //Check form submitted
-            StringAssert.StartsWith("Application Complete", driver.Title);
+            //Assert.StartsWith("Application Complete", driver.Title);
             Assert.AreEqual("ReferredToHuman", driver.FindElement(By.Id("Decision")).Text);
             Assert.IsNotNull(driver.FindElement(By.Id("ReferenceNumber")).Text);
             Assert.AreEqual("Stephen Magwindiri", driver.FindElement(By.Id("FullName")).Text);
@@ -278,11 +296,160 @@ namespace CreditCards.UITests
             Assert.AreEqual("5000", driver.FindElement(By.Id("Income")).Text);
             Assert.AreEqual("Married", driver.FindElement(By.Id("RelationshipStatus")).Text);
             Assert.AreEqual("Email", driver.FindElement(By.Id("BusinessSource")).Text);
+            //Assert.StartsWith
 
 
             driver.Close();
             driver.Quit();
         }
 
+        [TestMethod]
+        public void OpenContactFooterLinkInNewTab()
+        {
+            //Switch tabs
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+
+            driver.FindElement(By.Id("ContactFooter")).Click();
+            DemoHelper.Pause();
+
+            ReadOnlyCollection<string> allTabs = driver.WindowHandles;
+
+            string homePageTab = allTabs[0];
+            string contactTab = allTabs[1];
+
+            driver.SwitchTo().Window(contactTab);
+
+            // need to find the equivalence of this Xunit for MsTest
+            //Assert.Endswith("/Home/Contact", driver.Url);
+
+            driver.Close();
+            driver.Quit();
+        }
+
+        [TestMethod]
+        public void AlertIfChatClosed()
+        {
+            //Dealing with Alert boxes
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+
+            driver.FindElement(By.Id("LiveChat")).Click();
+
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+
+            IAlert alert = wait.Until(ExpectedConditions.AlertIsPresent());
+
+            Assert.AreEqual("Live chat is currently closed.", alert.Text);
+
+            DemoHelper.Pause();
+
+            alert.Accept();
+
+            DemoHelper.Pause();
+
+            driver.Close();
+            driver.Quit();
+        }
+
+        [TestMethod]
+        public void NavigateToAboutUsWhenCancelClicked()
+        {
+            //Ignore this one
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+            Assert.AreEqual(HomeTitle, driver.Title);
+
+            driver.FindElement(By.Id("LearnAboutUs")).Click();
+
+            DemoHelper.Pause();
+
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+
+            IAlert alertBox = wait.Until(ExpectedConditions.AlertIsPresent());
+
+            alertBox.Accept();
+
+            Assert.AreEqual(HomeTitle, driver.Title);
+
+            DemoHelper.Pause();
+
+            driver.Close();
+            driver.Quit();
+        }
+
+        [TestMethod]
+        public void NotNavigateToAboutUsWhenCancelClicked()
+        {
+            //Dealing with Alert boxes
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+            Assert.AreEqual(HomeTitle, driver.Title);
+
+            driver.FindElement(By.Id("LearnAboutUs")).Click();
+
+            DemoHelper.Pause();
+
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+
+            IAlert alertBox = wait.Until(ExpectedConditions.AlertIsPresent());
+
+            alertBox.Dismiss();
+
+            Assert.AreEqual(HomeTitle, driver.Title);
+
+            DemoHelper.Pause();
+
+            driver.Close();
+            driver.Quit();
+        }
+
+        [TestMethod]
+        public void NotDisplayCookieUseMessage()
+        {
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+
+            driver.Manage().Cookies.AddCookie(new Cookie("CookiesBeingUsed", "true"));
+
+            driver.Navigate().Refresh();
+
+            ReadOnlyCollection<IWebElement> message = 
+                driver.FindElements(By.Id("CookiesBeingUsed"));
+
+            Assert.IsNotNull(message);
+
+
+            driver.Close();
+            driver.Quit();
+
+        }
+
+        [TestMethod]
+        [UseReporter(typeof(BeyondCompareReporter))]
+        public void RenderHomePage()
+        {
+            IWebDriver driver = new ChromeDriver();
+
+            driver.Navigate().GoToUrl(HomeUrl);
+
+            ITakesScreenshot screenShotDriver = (ITakesScreenshot)driver;
+
+            Screenshot screenshot = screenShotDriver.GetScreenshot();
+
+            screenshot.SaveAsFile("homepage.Jpeg", ScreenshotImageFormat.Jpeg);
+
+            FileInfo file = new FileInfo("homepage.Jpeg");
+
+            Approvals.Verify(file);
+
+            driver.Close();
+            driver.Quit();
+        }
     }
 }
