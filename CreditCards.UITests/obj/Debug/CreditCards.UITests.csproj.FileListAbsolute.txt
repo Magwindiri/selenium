@@ -72,4 +72,3 @@ C:\_devprojects\selenium\CreditCards.UITests\bin\Debug\WebDriver.Support.xml
 C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.csproj.CopyComplete
 C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.dll
 C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.pdb
-C:\_devprojects\selenium\CreditCards.UITests\obj\Debug\CreditCards.UITests.csprojAssemblyReference.cache

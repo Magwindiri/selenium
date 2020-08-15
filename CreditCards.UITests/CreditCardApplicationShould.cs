@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using CreditCards.UITests.PageObjectModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
@@ -18,29 +19,25 @@ namespace CreditCards.UITests
         private const string ApplyUrl = "http://localhost:44108/Apply";
         //private readonly ItestOutputHelper outputHelper
 
+       //Navigate between Page object Models
         [TestMethod]
         [Description("Click Apply low Rate")]
         public void BeInitiatedFromHomePage_NewLowRate()
         {
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            DemoHelper.Pause();
+            ApplicationPage applicationPage = homePage.ClickApplyNewLowRateLink();
 
-            IWebElement applyLink = driver.FindElement(By.Name("ApplyLowRate"));
-            applyLink.Click();
-
-            DemoHelper.Pause();
-
-            Assert.AreEqual("Credit Card Application - Credit Cards", driver.Title);
-
-            Assert.AreEqual(ApplyUrl, driver.Url);
+            applicationPage.EnsurePageLoad();
 
             driver.Close();
             driver.Quit();
         }
 
+        //Not going to refactor it
         [TestMethod]
         public void BeInitiatedFromHomePage_EasyApplication()
         {
@@ -71,26 +68,20 @@ namespace CreditCards.UITests
             driver.Quit();
         }
 
+        //Refactoring this test and by encapsulating explicit waits
         [TestMethod]
         public void BeInitiatedFromHomePage_EasyApplication_PrebuiltConditions()
         {
             IWebDriver driver = new ChromeDriver();
-            driver.Navigate().GoToUrl(HomeUrl);
-            driver.Manage().Window.Minimize();
-            DemoHelper.Pause();
 
-            WebDriverWait wait =
-                new WebDriverWait(driver, TimeSpan.FromSeconds(11));
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            IWebElement applyLink =
-                wait.Until(ExpectedConditions.ElementToBeClickable(By.LinkText("Easy: Apply Now!")));
-            applyLink.Click();
-            DemoHelper.Pause();
+            homePage.WaitForEasyApplicationCarouselPage();
 
+            ApplicationPage applicationPage = homePage.ClickApplyEasyApplicationLink();
 
-            Assert.AreEqual("Credit Card Application - Credit Cards", driver.Title);
-
-            Assert.AreEqual(ApplyUrl, driver.Url);
+            applicationPage.EnsurePageLoad();
 
             driver.Close();
             driver.Quit();

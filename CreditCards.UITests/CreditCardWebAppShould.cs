@@ -14,13 +14,14 @@ using ApprovalTests.Reporters.Windows;
 using System.IO;
 using ApprovalTests;
 using ApprovalTests.Reporters;
+using CreditCards.UITests.PageObjectModel;
 
 namespace CreditCards.UITests
 {
     [TestClass]
     public class CreditCardWebAppShould
     {
-        private const string HomeUrl = "http://localhost:44108/";
+        private const string HomeUrl = "http://localhost:44108/Home";
         private const string AboutUrl = "http://localhost:44108/Home/About";
         private const string HomeTitle = "Home Page - Credit Cards";
         private const string ApplyUrl = "http://localhost:44108/Apply";
@@ -28,29 +29,12 @@ namespace CreditCards.UITests
         [TestMethod]
         public void CreditCardWebAppShouldPage()
         {
-            string actualResults;
-            //string expectedResults = "Home Page-Credit Cards";
 
             IWebDriver driver = new ChromeDriver();
-            driver.Navigate().GoToUrl(HomeUrl);
-            driver.Manage().Window.Maximize();
-            DemoHelper.Pause();
-            driver.Manage().Window.Minimize();
-            DemoHelper.Pause();
-            driver.Manage().Window.Size = new System.Drawing.Size(300, 400);
-            DemoHelper.Pause();
-            driver.Manage().Window.Position = new System.Drawing.Point(1, 1);
-            DemoHelper.Pause();
-            driver.Manage().Window.Position = new System.Drawing.Point(50, 50);
-            DemoHelper.Pause();
-            driver.Manage().Window.Position = new System.Drawing.Point(100, 100);
-            DemoHelper.Pause();
 
-            driver.Manage().Window.FullScreen();
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            actualResults = driver.Title;
-
-            Assert.AreEqual(HomeTitle, actualResults);
             driver.Close();
             driver.Quit();
         }
@@ -76,51 +60,23 @@ namespace CreditCards.UITests
         }
 
         [TestMethod]
-
-        public void ReloadHomePage()
-        {
-            IWebDriver driver = new ChromeDriver();
-            driver.Navigate().GoToUrl(HomeUrl);
-            driver.Manage().Window.Maximize();
-            DemoHelper.Pause();
-
-            driver.Navigate().Refresh();
-
-            Assert.AreEqual("Home Page - Credit Cards", driver.Title);
-            Console.WriteLine(HomeTitle, driver.Url);
-
-            driver.Close();
-            driver.Quit();
-        }
-
-        [TestMethod]
-
         public void ReloadHomePageOnBack()
         {
             //navigating backwards
             IWebDriver driver = new ChromeDriver();
 
-            DemoHelper.Pause();
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
+            
+            string initialToken = homePage.GenerationToken;
 
-            driver.Navigate().GoToUrl(HomeUrl);
-
-            IWebElement generationTokenElement =
-            driver.FindElement(By.Id("GenerationToken"));
-
-            string initialToken = generationTokenElement.Text;
-
-            DemoHelper.Pause();
             driver.Navigate().GoToUrl(AboutUrl);
-            DemoHelper.Pause();
             driver.Navigate().Back();
 
-
-            Assert.AreEqual(HomeTitle, driver.Title);
-            Console.WriteLine(HomeUrl, driver.Url);
-            Assert.AreEqual(HomeUrl, driver.Url);
+            homePage.EnsurePageLoad();
 
             //TODO: Assert that the page was reloaded
-            string reloadToken = driver.FindElement(By.Id("GenerationToken")).Text;
+            string reloadToken = homePage.GenerationToken;
 
             Assert.AreNotEqual(initialToken, reloadToken);
 
@@ -130,50 +86,26 @@ namespace CreditCards.UITests
         }
 
         [TestMethod]
-        public void ReloadHomePageOnForward()
-        {
-            IWebDriver driver = new ChromeDriver();
-            driver.Navigate().GoToUrl(AboutUrl);
-            DemoHelper.Pause();
-
-            driver.Navigate().GoToUrl(HomeUrl);
-
-            DemoHelper.Pause();
-
-            driver.Navigate().Back();
-
-            DemoHelper.Pause();
-
-            driver.Navigate().Forward();
-
-            Assert.AreEqual(HomeTitle, driver.Title);
-            Console.WriteLine(HomeUrl, driver.Url);
-            Assert.AreEqual(HomeUrl, driver.Url);
-
-            driver.Close();
-            driver.Quit();
-        }
-
-        [TestMethod]
         public void DisplayProductsAndRates()
         {
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
+            //Creating a new instance of HomePame Object Model
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
             DemoHelper.Pause();
 
-            ReadOnlyCollection<IWebElement> tableCells = driver.FindElements(By.TagName("td"));
 
 
-            Assert.AreEqual("Easy Credit Card", tableCells[0].Text);
-            Assert.AreEqual("20% APR", tableCells[1].Text);
+            Assert.AreEqual("Easy Credit Card", homePage.Products[0].name);
+            Assert.AreEqual("20% APR", homePage.Products[0].interestRate);
 
-            Assert.AreEqual("Silver Credit Card", tableCells[2].Text);
-            Assert.AreEqual("18% APR", tableCells[3].Text);
+            Assert.AreEqual("Silver Credit Card", homePage.Products[1].name);
+            Assert.AreEqual("18% APR", homePage.Products[1].interestRate);
 
-            Assert.AreEqual("Gold Credit Card", tableCells[4].Text);
-            Assert.AreEqual("17% APR", tableCells[5].Text);
+            Assert.AreEqual("Gold Credit Card", homePage.Products[2].name);
+            Assert.AreEqual("17% APR", homePage.Products[2].interestRate);
 
 
             driver.Close();
@@ -183,58 +115,40 @@ namespace CreditCards.UITests
         [TestMethod]
         public void BeSubmittedWhenValid()
         {
+            const string FirstName = "Stephen";
+            const string LastName = "Magwindiri";
+            const string Number = "AAAAA2";
+            const string Age = "18";
+            const string Income = "5000";
+
+
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(ApplyUrl);
+            var applicationPage = new ApplicationPage(driver);
+            applicationPage.NavigateTo();
 
+            applicationPage.EnterFirstName(FirstName);
+            applicationPage.EnterLastName(LastName);
+            applicationPage.EnterFrequentFlyerNumber(Number);
+            applicationPage.EnterAge(Age);
+            applicationPage.EnterGrossAnnualIncome(Income);
+            applicationPage.ChooseMaritalStatusMarried();
+            applicationPage.ChooseBusinessSourceTV();
+            applicationPage.AcceptTerms();
 
-            driver.FindElement(By.Id("FirstName")).SendKeys("Stephen");
+            ApplicationCompletePage applicationCompletePage =
+            applicationPage.SubmitApplication();
 
-            driver.FindElement(By.Id("LastName")).SendKeys("Magwindiri");
+            applicationCompletePage.EnsurePageLoad();
 
-            driver.FindElement(By.Id("FrequentFlyerNumber")).SendKeys("AAAAA2");
-
-            driver.FindElement(By.Id("Age")).SendKeys("18");
-
-            driver.FindElement(By.Id("GrossAnnualIncome")).SendKeys("5000");
-
-            driver.FindElement(By.Id("Married")).Click();
-
-            DemoHelper.Pause(5000);
-
-            IWebElement businessSourceSelectElement =
-                driver.FindElement(By.Id("BusinessSource"));
-
-            SelectElement BusinessSource = new SelectElement(businessSourceSelectElement);
-
-            //checked default element selected option is correct
-            Assert.AreEqual("I'd Rather Not Say", BusinessSource.SelectedOption.Text);
-
-            //Get all of the options
-
-            foreach (IWebElement option in BusinessSource.Options)
-            {
-                Console.WriteLine($"Value: {option.GetAttribute("value")} Text: {option.Text}");
-            }
-
-            Assert.AreEqual(5, BusinessSource.Options.Count);
-
-            //Select Options
-            BusinessSource.SelectByValue("Email");
-            DemoHelper.Pause();
-
-            BusinessSource.SelectByText("Internet Search");
-            DemoHelper.Pause();
-
-            BusinessSource.SelectByIndex(4);
-
-            driver.FindElement(By.Id("TermsAccepted")).Click();
-
-            //driver.FindElement(By.Id("SubmitApplication")).Click();
-
-            driver.FindElement(By.Id("Married")).Submit();
-
-            DemoHelper.Pause(5000);
+            //Assert.AreEqual("Application Complete - Credit Cards", driver.Title);
+            Assert.AreEqual("ReferredToHuman", applicationCompletePage.Decision);
+            Assert.IsNotNull(applicationCompletePage.ReferenceNumber);
+            Assert.AreEqual($"{FirstName} {LastName}", applicationCompletePage.FullName);
+            Assert.AreEqual(Age, applicationCompletePage.Age);
+            Assert.AreEqual(Income, applicationCompletePage.Income);
+            Assert.AreEqual("Married", applicationCompletePage.RelationshipStatus);
+            Assert.AreEqual("Declined To Comment", applicationCompletePage.BusinessSource);
 
             driver.Close();
             driver.Quit();
@@ -248,35 +162,23 @@ namespace CreditCards.UITests
             const string validAge = "18";
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(ApplyUrl);
+            var applicationPage = new ApplicationPage(driver);
+            applicationPage.NavigateTo();
 
 
-            driver.FindElement(By.Id("FirstName")).SendKeys(firstName);
+            applicationPage.EnterFirstName(firstName);
+        
+            applicationPage.EnterFrequentFlyerNumber("AAAAA2");
+            applicationPage.EnterAge(invalidAge);
+            applicationPage.EnterGrossAnnualIncome("5000");
+            applicationPage.ChooseMaritalStatusMarried();
+            applicationPage.ChooseBusinessSourceTV();
+            applicationPage.AcceptTerms();
+            applicationPage.SubmitApplication();
 
-            driver.FindElement(By.Id("FrequentFlyerNumber")).SendKeys("AAAAA2");
-
-            driver.FindElement(By.Id("Age")).SendKeys(invalidAge);
-
-            driver.FindElement(By.Id("GrossAnnualIncome")).SendKeys("5000");
-
-            driver.FindElement(By.Id("Married")).Click();
-
-            IWebElement businessSourceSelectElement =
-                driver.FindElement(By.Id("BusinessSource"));
-
-            SelectElement BusinessSource = new SelectElement(businessSourceSelectElement);
-            BusinessSource.SelectByValue("Email");
-
-            driver.FindElement(By.Id("TermsAccepted")).Click();
-
-            driver.FindElement(By.Id("SubmitApplication")).Click();
-            DemoHelper.Pause();
-
-            var validationErrors =
-                driver.FindElements(By.CssSelector(".validation-summary-errors > ul > li"));
-            Assert.AreEqual(2, validationErrors.Count);
-            Assert.AreEqual("Please provide a last name", validationErrors[0].Text);
-            Assert.AreEqual("You must be at least 18 years old", validationErrors[1].Text);
+            Assert.AreEqual(2, applicationPage.ValidationErrorMessages.Count);
+            Assert.AreEqual("Please provide a last name", applicationPage.ValidationErrorMessages);
+            Assert.AreEqual("You must be at least 18 years old", applicationPage.ValidationErrorMessages);
 
             //fix errors
             driver.FindElement(By.Id("LastName")).SendKeys("Magwindiri");
@@ -288,7 +190,7 @@ namespace CreditCards.UITests
             driver.FindElement(By.Id("SubmitApplication")).Click();
 
             //Check form submitted
-            //Assert.StartsWith("Application Complete", driver.Title);
+            Assert.AreEqual("Application Complete - Credit Cards", driver.Title);
             Assert.AreEqual("ReferredToHuman", driver.FindElement(By.Id("Decision")).Text);
             Assert.IsNotNull(driver.FindElement(By.Id("ReferenceNumber")).Text);
             Assert.AreEqual("Stephen Magwindiri", driver.FindElement(By.Id("FullName")).Text);
@@ -309,10 +211,10 @@ namespace CreditCards.UITests
             //Switch tabs
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            driver.FindElement(By.Id("ContactFooter")).Click();
-            DemoHelper.Pause();
+            homePage.ClickContactFooterLink();
 
             ReadOnlyCollection<string> allTabs = driver.WindowHandles;
 
@@ -322,7 +224,7 @@ namespace CreditCards.UITests
             driver.SwitchTo().Window(contactTab);
 
             // need to find the equivalence of this Xunit for MsTest
-            //Assert.Endswith("/Home/Contact", driver.Url);
+            //Assert.IsTrue(Actual.EndsWith("/Home/Contact"), driver.Url);
 
             driver.Close();
             driver.Quit();
@@ -334,9 +236,10 @@ namespace CreditCards.UITests
             //Dealing with Alert boxes
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            driver.FindElement(By.Id("LiveChat")).Click();
+            homePage.ClickLiveChatFooterLink();
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
 
@@ -344,11 +247,7 @@ namespace CreditCards.UITests
 
             Assert.AreEqual("Live chat is currently closed.", alert.Text);
 
-            DemoHelper.Pause();
-
             alert.Accept();
-
-            DemoHelper.Pause();
 
             driver.Close();
             driver.Quit();
@@ -360,10 +259,14 @@ namespace CreditCards.UITests
             //Ignore this one
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
-            Assert.AreEqual(HomeTitle, driver.Title);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            driver.FindElement(By.Id("LearnAboutUs")).Click();
+            //driver.Navigate().GoToUrl(HomeUrl);
+            // Assert.AreEqual(HomeTitle, driver.Title);
+            homePage.ClickLearnAboutUs();
+
+            //driver.FindElement(By.Id("LearnAboutUs")).Click();
 
             DemoHelper.Pause();
 
@@ -372,10 +275,8 @@ namespace CreditCards.UITests
             IAlert alertBox = wait.Until(ExpectedConditions.AlertIsPresent());
 
             alertBox.Accept();
-
-            Assert.AreEqual(HomeTitle, driver.Title);
-
-            DemoHelper.Pause();
+            //TODO
+            Assert.AreEqual(AboutUrl, driver.Url);
 
             driver.Close();
             driver.Quit();
@@ -387,12 +288,17 @@ namespace CreditCards.UITests
             //Dealing with Alert boxes
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
-            Assert.AreEqual(HomeTitle, driver.Title);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            driver.FindElement(By.Id("LearnAboutUs")).Click();
+            homePage.ClickLearnAboutUs();
 
-            DemoHelper.Pause();
+            //driver.Navigate().GoToUrl(HomeUrl);
+            //Assert.AreEqual(HomeTitle, driver.Title);
+
+           // driver.FindElement(By.Id("LearnAboutUs")).Click();
+
+            //DemoHelper.Pause();
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
 
@@ -400,7 +306,11 @@ namespace CreditCards.UITests
 
             alertBox.Dismiss();
 
-            Assert.AreEqual(HomeTitle, driver.Title);
+            homePage.EnsurePageLoad();
+
+            //TODO
+            
+            Assert.AreEqual(HomeUrl, driver.Url);
 
             DemoHelper.Pause();
 
@@ -413,16 +323,22 @@ namespace CreditCards.UITests
         {
             IWebDriver driver = new ChromeDriver();
 
-            driver.Navigate().GoToUrl(HomeUrl);
+            var homePage = new HomePage(driver);
+            homePage.NavigateTo();
 
-            driver.Manage().Cookies.AddCookie(new Cookie("CookiesBeingUsed", "true"));
+            //driver.Navigate().GoToUrl(HomeUrl);
+
+            driver.Manage().Cookies.AddCookie(new Cookie("acceptedCookies", "true"));
 
             driver.Navigate().Refresh();
 
-            ReadOnlyCollection<IWebElement> message = 
-                driver.FindElements(By.Id("CookiesBeingUsed"));
+            Assert.IsFalse(homePage.IsCookieMessagePresent);
 
-            Assert.IsNotNull(message);
+            driver.Manage().Cookies.DeleteCookieNamed("acceptedCookies");
+
+            driver.Navigate().Refresh();
+
+            Assert.IsTrue(homePage.IsCookieMessagePresent);
 
 
             driver.Close();
